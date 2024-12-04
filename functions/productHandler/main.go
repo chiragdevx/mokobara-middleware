@@ -10,7 +10,7 @@ import (
 func product(ctx context.Context, request events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	return events.APIGatewayProxyResponse{
 		StatusCode: 200,
-		Body:       "hello world",
+		Body:"hello world",
 	}, nil
 }
 

@@ -4,7 +4,6 @@ resource "aws_apigatewayv2_api" "http_api" {
   protocol_type = "HTTP"
 }
 
-
 locals {
   lambda_functions = ["productHandler"]
 }
@@ -18,14 +17,38 @@ data "archive_file" "zip_the_lambda_code" {
   excludes    = ["**/*.zip"]
 }
 
+# Create Lambda execution role
+resource "aws_iam_role" "lambda_execution_role" {
+  name               = "lambda-execution-role"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action    = "sts:AssumeRole"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Effect    = "Allow"
+        Sid       = ""
+      }
+    ]
+  })
+}
+
+# Attach the basic Lambda execution policy to the Lambda execution role
+resource "aws_iam_policy_attachment" "lambda_execution_policy_attachment" {
+  name       = "lambda-execution-policy-attachment"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+  roles      = [aws_iam_role.lambda_execution_role.name]
+}
 
 # Define the Lambda function
 resource "aws_lambda_function" "product-handler" {
   function_name = "productHandler"
-  handler       = "index.handler"
-  runtime       = "nodejs14.x"
+  handler       = "main"
+  runtime       = "provided.al2"
   filename      = data.archive_file.zip_the_lambda_code["productHandler"].output_path
-  role          = "arn:aws:iam::123456789012:role/service-role/lambda-execution-role"
+  role          = aws_iam_role.lambda_execution_role.arn
 }
 
 # Create the API Gateway stage
