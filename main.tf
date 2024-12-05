@@ -1,4 +1,3 @@
-
 # ============================= API GATEWAY ============================
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "product-api"
@@ -23,9 +22,9 @@ resource "aws_apigatewayv2_stage" "api_gateway_stage" {
 }
 
 resource "aws_apigatewayv2_route" "product_route" {
-  api_id        = aws_apigatewayv2_api.http_api.id
-  route_key     = "POST /product"
-  target        = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "POST /product"
+  target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
 resource "aws_lambda_permission" "allow_api_gateway" {
@@ -78,7 +77,6 @@ resource "aws_iam_policy" "iam_policy_for_lambda" {
 EOF
 }
 
-
 resource "aws_iam_role_policy_attachment" "lambda_default_policy_attachment" {
   role       = aws_iam_role.lambda_execution_role.name
   policy_arn = aws_iam_policy.iam_policy_for_lambda.arn
@@ -97,14 +95,16 @@ data "archive_file" "zip_the_lambda_code" {
 
 resource "aws_lambda_function" "product-handler" {
   function_name = "productHandler"
-  handler       = "main"
-  runtime       = "provided.al2"
+  handler       = "bootstrap"
+  runtime       = "provided.al2023"
   filename      = data.archive_file.zip_the_lambda_code["productHandler"].output_path
   role          = aws_iam_role.lambda_execution_role.arn
 
+
+architectures = ["x86_64"]
   source_code_hash = data.archive_file.zip_the_lambda_code["productHandler"].output_base64sha256
 
   lifecycle {
-    create_before_destroy = true 
+    create_before_destroy = true
   }
 }
