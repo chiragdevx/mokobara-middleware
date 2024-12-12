@@ -101,7 +101,7 @@ resource "aws_lambda_function" "product-handler" {
   role          = aws_iam_role.lambda_execution_role.arn
 
 
-architectures = ["x86_64"]
+  architectures    = ["x86_64"]
   source_code_hash = data.archive_file.zip_the_lambda_code["productHandler"].output_base64sha256
 
   lifecycle {
