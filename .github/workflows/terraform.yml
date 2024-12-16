@@ -20,7 +20,7 @@ jobs:
       with:
         terraform_version: '1.4.0'
 
-    # Step 3: Configure AWS credentials (or other cloud provider)
+    # Step 3: Configure AWS credentials (or other cloud provider
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
