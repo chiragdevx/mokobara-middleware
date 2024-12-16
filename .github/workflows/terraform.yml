@@ -1,36 +1,45 @@
-name: Terraform and Lambda Deploy
+name: Terraform Deploy
 
 on:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
+      - main  # Trigger this workflow when pushing to the 'main' branch
 
 jobs:
-  build_and_deploy:
-    runs-on: ubuntu-latest
+  terraform:
+    runs-on: ubuntu-latest  # Run on the latest Ubuntu runner
 
     steps:
+    # Step 1: Checkout the code from the repository
     - name: Checkout code
       uses: actions/checkout@v2
 
+    # Step 2: Set up Terraform
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v1
       with:
         terraform_version: '1.4.0'
 
-    - name: Set up Go
-      uses: actions/setup-go@v2
+    # Step 3: Configure AWS credentials (or other cloud provider)
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v1
       with:
-        go-version: '1.23'
+        aws_access_key_id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws_secret_access_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws_region: us-west-2  # Specify your AWS region
 
-    - name: Install Dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install zip
+    # Step 4: Initialize Terraform
+    - name: Terraform Init
+      run: terraform init
 
-    - name: Run Makefile to build and deploy
-      run: |
-        make deploy
+    # Step 5: Plan Terraform deployment
+    - name: Terraform Plan
+      run: terraform plan -out=tfplan
+
+    # Step 6: Apply Terraform configuration
+    - name: Terraform Apply
+      run: terraform apply -auto-approve tfplan
+
+    # Step 7: Clean up (optional, can remove the tfplan file after apply)
+    - name: Clean up
+      run: rm -f tfplan
