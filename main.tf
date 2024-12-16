@@ -1,18 +1,25 @@
+locals {
+  lambda_functions = ["productHandler", "orderHandler"]
+}
+
 # ============================= API GATEWAY ============================
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "product-api"
   protocol_type = "HTTP"
 }
 
-locals {
-  lambda_functions = ["productHandler"]
-}
-
 resource "aws_apigatewayv2_integration" "lambda_integration" {
   api_id             = aws_apigatewayv2_api.http_api.id
   integration_type   = "AWS_PROXY"
   integration_method = "POST"
-  integration_uri    = aws_lambda_function.product-handler.invoke_arn
+  integration_uri    = aws_lambda_function.lambda_function["productHandler"].invoke_arn
+}
+
+resource "aws_apigatewayv2_integration" "order_lambda_integration" {
+  api_id             = aws_apigatewayv2_api.http_api.id
+  integration_type   = "AWS_PROXY"
+  integration_method = "POST"
+  integration_uri    = aws_lambda_function.lambda_function["orderHandler"].invoke_arn
 }
 
 resource "aws_apigatewayv2_stage" "api_gateway_stage" {
@@ -27,15 +34,27 @@ resource "aws_apigatewayv2_route" "product_route" {
   target    = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
 }
 
+resource "aws_apigatewayv2_route" "order_route" {
+  api_id    = aws_apigatewayv2_api.http_api.id
+  route_key = "ANY /order"
+  target    = "integrations/${aws_apigatewayv2_integration.order_lambda_integration.id}"
+}
+
 resource "aws_lambda_permission" "allow_api_gateway" {
   statement_id  = "AllowApiGatewayInvoke"
   action        = "lambda:InvokeFunction"
   principal     = "apigateway.amazonaws.com"
-  function_name = aws_lambda_function.product-handler.function_name
+  function_name = aws_lambda_function.lambda_function["productHandler"].function_name
+}
+
+resource "aws_lambda_permission" "allow_api_gateway_order" {
+  statement_id  = "AllowApiGatewayInvokeOrder"
+  action        = "lambda:InvokeFunction"
+  principal     = "apigateway.amazonaws.com"
+  function_name = aws_lambda_function.lambda_function["orderHandler"].function_name
 }
 
 # ======================= LAMBDA ROLE AND POLICY =======================
-
 resource "aws_iam_role" "lambda_execution_role" {
   name               = "aws_lambda_role"
   assume_role_policy = <<EOF
@@ -83,7 +102,6 @@ resource "aws_iam_role_policy_attachment" "lambda_default_policy_attachment" {
 }
 
 # ======================= LAMBDA FUNCTION =======================
-
 data "archive_file" "zip_the_lambda_code" {
   for_each = toset(local.lambda_functions)
 
@@ -93,16 +111,27 @@ data "archive_file" "zip_the_lambda_code" {
   excludes    = ["**/*.zip"]
 }
 
-resource "aws_lambda_function" "product-handler" {
-  function_name = "productHandler"
+resource "aws_lambda_function" "lambda_function" {
+  for_each = toset(local.lambda_functions)
+
+  function_name = each.key
   handler       = "bootstrap"
   runtime       = "provided.al2023"
-  filename      = data.archive_file.zip_the_lambda_code["productHandler"].output_path
+  filename      = data.archive_file.zip_the_lambda_code[each.key].output_path
   role          = aws_iam_role.lambda_execution_role.arn
-
+  timeout       = 180
 
   architectures    = ["x86_64"]
-  source_code_hash = data.archive_file.zip_the_lambda_code["productHandler"].output_base64sha256
+  source_code_hash = data.archive_file.zip_the_lambda_code[each.key].output_base64sha256
+
+  environment {
+    variables = {
+      BASE_URL = var.base_url
+      URL_TOKEN = var.url_token
+      STORE_NAME = var.store_name
+      SHOPIFY_TOKEN = var.shopify_token
+    }
+  }
 
   lifecycle {
     create_before_destroy = true

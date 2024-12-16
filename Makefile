@@ -17,4 +17,4 @@ clean:
 	rm -f functions/*.zip
 
 deploy: build
-	terraform apply -auto-approve
+	terraform apply -auto-approve -var-file=dev.tfvars
