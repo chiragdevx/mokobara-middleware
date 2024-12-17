@@ -54,16 +54,6 @@ resource "aws_dynamodb_table" "mokobara_lock" {
   }
 }
 
-terraform {
-  backend "s3" {
-    bucket         = "mokobara-state-bucket"
-    key            = "./terraform.tfstate"
-    region         = "us-west-1"
-    dynamodb_table = "mokobara-lock-table"
-    encrypt        = true
-  }
-}
-
 # ============================= API GATEWAY ============================
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "product-api"

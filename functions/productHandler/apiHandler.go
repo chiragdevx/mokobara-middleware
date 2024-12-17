@@ -99,7 +99,7 @@ func createProduct(product map[string]interface{}) error {
 	}
 	req.Header.Set("Authorization", "Bearer "+token)
 
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 4 * time.Minute}
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Printf("❌ Failed to send request: %v\n", err)
@@ -113,13 +113,13 @@ func createProduct(product map[string]interface{}) error {
 		return fmt.Errorf("failed to read response: %v", err)
 	}
 
-	log.Printf("🌐 Response Status: %d\n", resp.StatusCode)
+	log.Printf("🔥 Response Status: %d\n", resp.StatusCode)
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		log.Printf("❌ API call failed with status code %d: %s\n", resp.StatusCode, string(body))
 		return fmt.Errorf("API call failed with status code %d: %s", resp.StatusCode, string(body))
 	}
 
-	log.Printf("✅ Product created successfully: %s\n", product["sku"])
+	log.Printf("✅ Product created successfully: %s\n")
 	return nil
 }

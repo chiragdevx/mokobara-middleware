@@ -1,9 +1,10 @@
 terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "5.38.0"
-    }
+  backend "s3" {
+    bucket         = "mokobara-state-bucket"
+    key            = "terraform.tfstate"
+    region         = "us-west-1"
+    dynamodb_table = "mokobara-lock-table"
+    encrypt        = true
   }
 }
 
