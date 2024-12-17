@@ -86,7 +86,7 @@ func updateProductHandler(data map[string]interface{}) {
 	close(errChan)
 
 	for err := range errChan {
-		fmt.Printf("❌ API call failed: %v\n", err)
+		fmt.Printf("❌ API call failed : %v\n", err)
 	}
 }
 

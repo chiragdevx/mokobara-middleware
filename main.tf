@@ -2,6 +2,68 @@ locals {
   lambda_functions = ["productHandler", "orderHandler"]
 }
 
+# ============================= S3 BUCKET ============================
+resource "aws_s3_bucket" "mokobara_state" {
+  bucket = "mokobara-state-bucket"
+  tags = {
+    Name        = "Terraform State Bucket"
+    Environment = "Dev"
+  }
+}
+
+resource "aws_s3_bucket_versioning" "versioning" {
+  bucket = aws_s3_bucket.mokobara_state.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
+  bucket = aws_s3_bucket.mokobara_state.id
+
+  rule {
+    apply_server_side_encryption_by_default {
+      sse_algorithm = "AES256"
+    }
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "public_access" {
+  bucket = aws_s3_bucket.mokobara_state.id
+
+  block_public_acls   = true
+  block_public_policy = true
+  ignore_public_acls  = true
+  restrict_public_buckets = true
+}
+
+# ============================= DYNAMODB TABLE ============================
+resource "aws_dynamodb_table" "mokobara_lock" {
+  name         = "mokobara-lock-table"
+  hash_key     = "LockID"
+  billing_mode = "PAY_PER_REQUEST"
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+  tags = {
+    Name        = "Terraform Lock Table"
+    Environment = "Dev"
+  }
+}
+
+terraform {
+  backend "s3" {
+    bucket         = "mokobara-state-bucket"
+    key            = "./terraform.tfstate"
+    region         = "us-west-1"
+    dynamodb_table = "mokobara-lock-table"
+    encrypt        = true
+  }
+}
+
 # ============================= API GATEWAY ============================
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "product-api"
