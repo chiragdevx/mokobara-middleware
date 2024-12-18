@@ -1,6 +1,6 @@
 .PHONY: build_all clean_all
 
-LAMBDA_FUNCTIONS := productHandler
+LAMBDA_FUNCTIONS := productHandler orderHandler
 
 build:
 	@for function in $(LAMBDA_FUNCTIONS); do \

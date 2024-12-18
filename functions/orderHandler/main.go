@@ -2,19 +2,26 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 )
 
-// HandleProductRequest handles API Gateway requests
-func HandleProductRequest(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
-	
+// HandleOrderRequest handles API Gateway requests
+func HandleOrderRequest(ctx context.Context, request events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	fmt.Printf("🔥 Received event: %+v\n", request)
+	fmt.Printf("🔥 Request body: %s\n", request.Body)
+
+	return events.APIGatewayV2HTTPResponse{
+		StatusCode: 200,
+		Headers: map[string]string{
+			"Content-Type": "application/json",
+		},
+		Body: `{"message": "test"}`,
+	}, nil
 }
 
-
 func main() {
-	lambda.Start(HandleProductRequest)
+	lambda.Start(HandleOrderRequest)
 }

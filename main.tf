@@ -31,9 +31,9 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
 resource "aws_s3_bucket_public_access_block" "public_access" {
   bucket = aws_s3_bucket.mokobara_state.id
 
-  block_public_acls   = true
-  block_public_policy = true
-  ignore_public_acls  = true
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
   restrict_public_buckets = true
 }
 
@@ -66,7 +66,7 @@ terraform {
 
 # ============================= API GATEWAY ============================
 resource "aws_apigatewayv2_api" "http_api" {
-  name          = "product-api"
+  name          = "mokobara-api-gateway"
   protocol_type = "HTTP"
 }
 
@@ -188,9 +188,9 @@ resource "aws_lambda_function" "lambda_function" {
 
   environment {
     variables = {
-      BASE_URL = var.base_url
-      URL_TOKEN = var.url_token
-      STORE_NAME = var.store_name
+      BASE_URL      = var.base_url
+      URL_TOKEN     = var.url_token
+      STORE_NAME    = var.store_name
       SHOPIFY_TOKEN = var.shopify_token
     }
   }
