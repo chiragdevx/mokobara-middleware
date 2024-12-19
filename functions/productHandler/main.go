@@ -31,11 +31,11 @@ func HandleProductRequest(ctx context.Context, request events.APIGatewayV2HTTPRe
 	switch shopifyTopic {
 	case "products/create":
 		fmt.Println("🔥 Handling 'products/create' event")
-		// createProductHandler(request)
+		manageProductHandler(data)
 
 	case "products/update":
 		fmt.Println("🔥 Handling 'products/update' event")
-		updateProductHandler(data)
+		manageProductHandler(data)
 	default:
 		fmt.Println("🔥 Unknown Shopify Topic:", shopifyTopic)
 	}
@@ -51,7 +51,7 @@ func HandleProductRequest(ctx context.Context, request events.APIGatewayV2HTTPRe
 
 }
 
-func updateProductHandler(data map[string]interface{}) {
+func manageProductHandler(data map[string]interface{}) {
 	productId := data["id"].(float64)
 	productIdStr := fmt.Sprintf("%.0f", productId)
 
@@ -76,7 +76,7 @@ func updateProductHandler(data map[string]interface{}) {
 		wg.Add(1)
 		go func(product map[string]interface{}) {
 			defer wg.Done()
-			if err := createProduct(product); err != nil {
+			if err := manageProduct(product); err != nil {
 				errChan <- err
 			}
 		}(product)
