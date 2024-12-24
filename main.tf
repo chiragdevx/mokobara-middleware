@@ -98,7 +98,7 @@ resource "aws_apigatewayv2_route" "product_route" {
 
 resource "aws_apigatewayv2_route" "order_route" {
   api_id    = aws_apigatewayv2_api.http_api.id
-  route_key = "ANY /order"
+  route_key = "POST /order"
   target    = "integrations/${aws_apigatewayv2_integration.order_lambda_integration.id}"
 }
 

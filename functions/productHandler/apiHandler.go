@@ -50,7 +50,7 @@ func getProductPayload(body map[string]interface{}) ([]map[string]interface{}, e
 				"visibility":       4,
 				"type_id":          "simple",
 				"weight":           1.0,
-				"attribute_set_id": 4,
+				"attribute_set_id": 92,
 				"extension_attributes": map[string]interface{}{
 					"stock_item": map[string]interface{}{
 						"qty":         inventoryQuantity,
