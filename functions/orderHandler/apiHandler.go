@@ -84,9 +84,9 @@ func createShopifyOrder(order Order) error {
 }
 
 func updateShopifyOrder(order Order) error {
-	// storeName := os.Getenv("STORE_NAME")
-	// shopifyToken := os.Getenv
-	// shopifyURL := fmt.Sprintf("https://%s.myshopify.com/admin/api/2021-07/orders.json", storeName)
+	storeName := os.Getenv("STORE_NAME")
+	shopifyToken := os.Getenv("SHOPIFY_TOKEN")
+	shopifyURL := fmt.Sprintf("https://%s.myshopify.com/admin/api/2021-07/orders/%s.json", storeName, order.OrderID)
 
 	status := getOrderStatus(order.OrderID)
 
@@ -137,6 +137,28 @@ func updateShopifyOrder(order Order) error {
 
 	// print the order JSON
 	fmt.Printf("🔥 Shopify Order JSON: %s\n", shopifyOrderJSON)
+
+	// create a new HTTP request to update the order
+	req, err := http.NewRequest("PUT", shopifyURL, bytes.NewBuffer(shopifyOrderJSON))
+	if err != nil {
+		return fmt.Errorf("❌ failed to create Shopify request: %v", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Shopify-Access-Token", shopifyToken)
+
+	// send the request
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return fmt.Errorf("❌ failed to send Shopify request: %v", err)
+	}
+
+	// check the response status code
+	if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("❌ unexpected status code: %d", res.StatusCode)
+	}
+
+	defer res.Body.Close()
 
 	return nil
 }
