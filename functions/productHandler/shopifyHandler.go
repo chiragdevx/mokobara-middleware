@@ -69,7 +69,7 @@ func getProductWithMetafields(productID string) (map[string]interface{}, error) 
 		return nil, err
 	}
 
-	fmt.Printf("🔥 isPublished :", isPublished)
+	fmt.Printf("🔥 isPublished: %v\n", isPublished)
 
 	if !isPublished {
 		return nil, fmt.Errorf("❌ product is not published")
@@ -94,4 +94,3 @@ func getProductWithMetafields(productID string) (map[string]interface{}, error) 
 	}
 	return productResponse, nil
 }
-
